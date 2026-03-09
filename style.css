@@ -1,0 +1,5 @@
+body { margin: 0; padding: 0; background-color: #000; overflow: hidden; color: white; font-family: 'Pretendard', sans-serif; }
+#space-canvas { display: block; }
+#ui-container { position: absolute; top: 30px; left: 30px; pointer-events: none; }
+button { pointer-events: auto; background: transparent; border: 1px solid cyan; color: cyan; padding: 10px 20px; cursor: pointer; transition: 0.3s; }
+button:hover { background: cyan; color: black; }
