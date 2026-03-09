@@ -1,9 +1,9 @@
 /**
- * Project AstroMap: Phase 1 - Space View (Integrated)
- * 기능: 360도 별 가루, 텍스처 적용된 지구, 줌인 애니메이션, NASA API 연동
+ * Project AstroMap: Phase 2 - Space to Ground Transition
+ * 기능: 3D 우주 뷰, NASA API 연동, 로딩 시퀀스, 구글 맵 위성 뷰 전환
  */
 
-// 1. Scene(장면), Camera(카메라), Renderer(렌더러) 초기 설정
+// 1. Scene, Camera, Renderer 설정
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 const renderer = new THREE.WebGLRenderer({
@@ -14,13 +14,11 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 
-// 2. 360도 우주 배경 (별 가루) - 모든 방향에 별이 있도록 수정
+// 2. 360도 우주 배경 (별 가루)
 const starGeometry = new THREE.BufferGeometry();
 const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
-
 const starVertices = [];
 for (let i = 0; i < 15000; i++) {
-    // -1000 ~ 1000 사이의 랜덤 좌표로 사방에 배치
     const x = (Math.random() - 0.5) * 2000;
     const y = (Math.random() - 0.5) * 2000;
     const z = (Math.random() - 0.5) * 2000;
@@ -30,12 +28,12 @@ starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerti
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
-// 3. 지구(Earth) 생성 - 텍스처 및 조명 반응 재질 적용
+// 3. 지구(Earth) 생성
 const textureLoader = new THREE.TextureLoader();
 const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
 const earthNormalMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg');
 
-const geometry = new THREE.SphereGeometry(1, 64, 64); // 구체를 더 부드럽게(64)
+const geometry = new THREE.SphereGeometry(1, 64, 64);
 const material = new THREE.MeshStandardMaterial({ 
     map: earthTexture,
     normalMap: earthNormalMap 
@@ -43,11 +41,10 @@ const material = new THREE.MeshStandardMaterial({
 const earth = new THREE.Mesh(geometry, material);
 scene.add(earth);
 
-// 4. 조명(Light) 추가 - StandardMaterial 사용 시 필수
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // 은은한 전체 조명
+// 4. 조명 설정
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
 scene.add(ambientLight);
-
-const sunLight = new THREE.PointLight(0xffffff, 1.2); // 태양 빛 (오른쪽 위에서 비춤)
+const sunLight = new THREE.PointLight(0xffffff, 1.2);
 sunLight.position.set(5, 3, 5);
 scene.add(sunLight);
 
@@ -55,45 +52,91 @@ camera.position.z = 5;
 
 // 5. 상태 관리 변수
 let isZooming = false;
+let map; // 구글 맵 객체
 
-// 6. NASA API 연동 함수
+// 6. 구글 맵 초기화 함수 (지도는 처음에 숨겨져 있음)
+function initMap() {
+    const initialLocation = { lat: 37.5665, lng: 126.9780 }; // 기본값: 서울
+    map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 18,
+        center: initialLocation,
+        mapTypeId: 'satellite',
+        tilt: 45
+    });
+    console.log("구글 맵 준비 완료");
+}
+
+// 7. NASA API 연동 함수
 async function getNasaData() {
-    const API_KEY = 'DEMO_KEY'; // 나중에 개인 키로 교체 권장
+    const API_KEY = 'DEMO_KEY'; 
     const url = `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`;
 
     try {
         const response = await fetch(url);
         const data = await response.json();
-        console.log("NASA Data Received:", data);
-        alert(`오늘의 우주 소식: ${data.title}\n\n워프 준비가 완료되었습니다!`);
+        console.log("NASA 데이터 수신:", data.title);
+        // 전환 전 알림 (실제 앱에서는 UI에 표시하는 것이 좋음)
+        return data;
     } catch (error) {
-        console.error("NASA API 호출 중 오류:", error);
+        console.error("NASA 데이터 로드 실패:", error);
+        return null;
     }
 }
 
-// 7. UI 이벤트 리스너
+// 8. 차원 이동(Transition) 시퀀스
+async function startTransition() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const progressFill = document.getElementById('progress-fill');
+    const spaceCanvas = document.getElementById('space-canvas');
+    const mapDiv = document.getElementById('map');
+
+    // NASA 데이터 로드 대기
+    const nasaData = await getNasaData();
+    
+    // 우주 화면 페이드 아웃 및 로딩 화면 표시
+    spaceCanvas.style.display = 'none';
+    loadingScreen.classList.remove('hidden');
+
+    // 게이지 채우기 시뮬레이션
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 1;
+        progressFill.style.width = progress + '%';
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            // 지도 화면으로 전환
+            loadingScreen.classList.add('hidden');
+            mapDiv.style.display = 'block';
+            
+            // 지도 강제 리사이즈 (숨겨져 있다가 나타날 때 레이아웃 깨짐 방지)
+            google.maps.event.trigger(map, "resize");
+            alert(`지구 도착! 오늘의 우주 소식: ${nasaData ? nasaData.title : '연결 원활'}`);
+        }
+    }, 20); // 약 2초 동안 진행
+}
+
+// 9. UI 이벤트 리스너
 document.getElementById('btn-explore').addEventListener('click', () => {
     isZooming = true;
-    document.getElementById('ui-container').style.opacity = '0'; // UI 페이드 아웃
-    document.getElementById('ui-container').style.transition = 'opacity 1s';
+    const ui = document.getElementById('ui-container');
+    ui.style.opacity = '0';
+    ui.style.transition = 'opacity 1s';
 });
 
-// 8. 애니메이션 루프
+// 10. 애니메이션 루프
 function animate() {
     requestAnimationFrame(animate);
 
-    // 자전 효과
     earth.rotation.y += 0.002;
     stars.rotation.y += 0.0001;
 
-    // 줌인 애니메이션 로직
     if (isZooming) {
-        if (camera.position.z > 1.5) {
-            camera.position.z -= 0.05; // 지구로 접근
+        if (camera.position.z > 1.2) {
+            camera.position.z -= 0.08; 
         } else {
             isZooming = false;
-            // 줌인이 끝나면 NASA 데이터를 가져오고 다음 단계 준비
-            getNasaData();
+            startTransition(); // 줌인이 끝나면 전환 시작
         }
     }
 

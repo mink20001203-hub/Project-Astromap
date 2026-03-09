@@ -15,7 +15,26 @@
         <button id="btn-explore">지구로 접근하기</button>
     </div>
 
+    <div id="loading-screen" class="hidden">
+        <div class="warp-effect"></div>
+        <div class="dashboard-text">
+            <h2>WARP DRIVE ACTIVE</h2>
+            <p id="status-msg">지구 대기권 진입 및 데이터 동기화 중...</p>
+            <div class="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geometry,drawing&callback=initMap" async defer></script>
+    
     <script src="main.js"></script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_zt5pygWBhHI-Cqy6os7fMFSqAXfYels&libraries=geometry,drawing&callback=initMap" async defer></script>
+
 </body>
 </html>
