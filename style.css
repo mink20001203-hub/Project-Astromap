@@ -103,7 +103,22 @@ button:hover {
     animation: warpMove 10s linear infinite;
 }
 
-
+#mission-ui {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    z-index: 20;
+    pointer-events: none;
+}
+.mission-panel {
+    pointer-events: auto;
+    background: rgba(0, 20, 40, 0.8);
+    border: 1px solid #00ffff;
+    padding: 15px;
+    border-radius: 5px;
+    color: #00ffff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
 
 @keyframes warpMove {
     from { background-position: 0 0; }
