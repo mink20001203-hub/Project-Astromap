@@ -34,9 +34,9 @@ const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoo
 const earthNormalMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg');
 
 const geometry = new THREE.SphereGeometry(1, 64, 64);
-const material = new THREE.MeshStandardMaterial({ 
+const material = new THREE.MeshStandardMaterial({
     map: earthTexture,
-    normalMap: earthNormalMap 
+    normalMap: earthNormalMap
 });
 const earth = new THREE.Mesh(geometry, material);
 scene.add(earth);
@@ -64,90 +64,122 @@ function initMap() {
         tilt: 45
     });
     console.log("구글 맵 준비 완료");
-}
+    // 1. 경로를 담을 빈 선(Polyline) 객체를 먼저 생성합니다.
+    const runningPath = new google.maps.Polyline({
+        strokeColor: "#FF0000", // 선 색상 (빨간색)
+        strokeOpacity: 1.0,     // 투명도
+        strokeWeight: 3,        // 선 굵기
+        map: map                // 선을 표시할 지도 객체
+    });
 
-// 7. NASA API 연동 함수
-async function getNasaData() {
-    const API_KEY = 'DEMO_KEY'; 
-    const url = `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`;
+    // 2. 지도 클릭 이벤트 리스너 등록
+    map.addListener("click", (event) => {
+        // event.latLng에 클릭한 지점의 좌표가 담겨 있습니다.
+        addLatLngToPath(event.latLng, runningPath);
+    });
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        console.log("NASA 데이터 수신:", data.title);
-        // 전환 전 알림 (실제 앱에서는 UI에 표시하는 것이 좋음)
-        return data;
-    } catch (error) {
-        console.error("NASA 데이터 로드 실패:", error);
-        return null;
+    // 3. 좌표를 경로에 추가하는 함수
+    function addLatLngToPath(latLng, polyline) {
+        // getPath()는 현재 선이 가진 좌표 배열(MVCArray)을 가져옵니다.
+        const path = polyline.getPath();
+
+        // push를 통해 새로운 좌표를 추가하면 지도에 즉시 선이 그려집니다.
+        path.push(latLng);
+
+        // 선택 사항: 클릭한 지점에 작은 마커를 남기고 싶다면 추가
+        new google.maps.Marker({
+            position: latLng,
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 3
+            }
+        });
     }
 }
 
-// 8. 차원 이동(Transition) 시퀀스
-async function startTransition() {
-    const loadingScreen = document.getElementById('loading-screen');
-    const progressFill = document.getElementById('progress-fill');
-    const spaceCanvas = document.getElementById('space-canvas');
-    const mapDiv = document.getElementById('map');
+    // 7. NASA API 연동 함수
+    async function getNasaData() {
+        const API_KEY = 'DEMO_KEY';
+        const url = `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`;
 
-    // NASA 데이터 로드 대기
-    const nasaData = await getNasaData();
-    
-    // 우주 화면 페이드 아웃 및 로딩 화면 표시
-    spaceCanvas.style.display = 'none';
-    loadingScreen.classList.remove('hidden');
-
-    // 게이지 채우기 시뮬레이션
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += 1;
-        progressFill.style.width = progress + '%';
-        
-        if (progress >= 100) {
-            clearInterval(interval);
-            // 지도 화면으로 전환
-            loadingScreen.classList.add('hidden');
-            mapDiv.style.display = 'block';
-            
-            // 지도 강제 리사이즈 (숨겨져 있다가 나타날 때 레이아웃 깨짐 방지)
-            google.maps.event.trigger(map, "resize");
-            alert(`지구 도착! 오늘의 우주 소식: ${nasaData ? nasaData.title : '연결 원활'}`);
-        }
-    }, 20); // 약 2초 동안 진행
-}
-
-// 9. UI 이벤트 리스너
-document.getElementById('btn-explore').addEventListener('click', () => {
-    isZooming = true;
-    const ui = document.getElementById('ui-container');
-    ui.style.opacity = '0';
-    ui.style.transition = 'opacity 1s';
-});
-
-// 10. 애니메이션 루프
-function animate() {
-    requestAnimationFrame(animate);
-
-    earth.rotation.y += 0.002;
-    stars.rotation.y += 0.0001;
-
-    if (isZooming) {
-        if (camera.position.z > 1.2) {
-            camera.position.z -= 0.08; 
-        } else {
-            isZooming = false;
-            startTransition(); // 줌인이 끝나면 전환 시작
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log("NASA 데이터 수신:", data.title);
+            // 전환 전 알림 (실제 앱에서는 UI에 표시하는 것이 좋음)
+            return data;
+        } catch (error) {
+            console.error("NASA 데이터 로드 실패:", error);
+            return null;
         }
     }
 
-    renderer.render(scene, camera);
-}
+    // 8. 차원 이동(Transition) 시퀀스
+    async function startTransition() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const progressFill = document.getElementById('progress-fill');
+        const spaceCanvas = document.getElementById('space-canvas');
+        const mapDiv = document.getElementById('map');
 
-// 창 크기 조절 대응
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+        // NASA 데이터 로드 대기
+        const nasaData = await getNasaData();
 
-animate();
+        // 우주 화면 페이드 아웃 및 로딩 화면 표시
+        spaceCanvas.style.display = 'none';
+        loadingScreen.classList.remove('hidden');
+
+        // 게이지 채우기 시뮬레이션
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 1;
+            progressFill.style.width = progress + '%';
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                // 지도 화면으로 전환
+                loadingScreen.classList.add('hidden');
+                mapDiv.style.display = 'block';
+
+                // 지도 강제 리사이즈 (숨겨져 있다가 나타날 때 레이아웃 깨짐 방지)
+                google.maps.event.trigger(map, "resize");
+                alert(`지구 도착! 오늘의 우주 소식: ${nasaData ? nasaData.title : '연결 원활'}`);
+            }
+        }, 20); // 약 2초 동안 진행
+    }
+
+    // 9. UI 이벤트 리스너
+    document.getElementById('btn-explore').addEventListener('click', () => {
+        isZooming = true;
+        const ui = document.getElementById('ui-container');
+        ui.style.opacity = '0';
+        ui.style.transition = 'opacity 1s';
+    });
+
+    // 10. 애니메이션 루프
+    function animate() {
+        requestAnimationFrame(animate);
+
+        earth.rotation.y += 0.002;
+        stars.rotation.y += 0.0001;
+
+        if (isZooming) {
+            if (camera.position.z > 1.2) {
+                camera.position.z -= 0.08;
+            } else {
+                isZooming = false;
+                startTransition(); // 줌인이 끝나면 전환 시작
+            }
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    // 창 크기 조절 대응
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
