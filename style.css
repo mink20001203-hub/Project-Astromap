@@ -120,6 +120,36 @@ button:hover {
     box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
+/* NASA 모달 스타일 */
+#nasa-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: #001a33;
+    border: 2px solid #00ffff;
+    padding: 20px;
+    width: 80%; max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: white;
+    box-shadow: 0 0 20px #00ffff;
+    position: relative;
+}
+
+#close-modal {
+    position: absolute;
+    top: 10px; right: 20px;
+    font-size: 30px; cursor: pointer; color: #00ffff;
+}
+
+#nasa-image { width: 100%; margin: 15px 0; border-radius: 5px; }
+
 @keyframes warpMove {
     from { background-position: 0 0; }
     to { background-position: 500px 500px; }
