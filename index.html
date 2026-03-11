@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AstroMap - Space Exploration</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <canvas id="space-canvas"></canvas>
 
@@ -26,29 +28,40 @@
         </div>
     </div>
 
-<div id="mission-ui" class="hidden">
-    <div class="mission-panel">
-        <h3>GROUND MISSION</h3>
-        <p>러닝 동선 거리: <span id="distance-value">0</span> km</p>
-        <button id="btn-reset">경로 초기화</button>
-    </div>
-</div>
+    <div id="mission-ui" class="hidden">
+        <div class="mission-panel">
+            <h3>GROUND MISSION</h3>
+            <p>러닝 동선 거리: <span id="distance-value">0</span> km</p>
+            <button id="btn-reset">경로 초기화</button>
 
-<div id="nasa-modal" class="hidden">
-    <div class="modal-content">
-        <span id="close-modal">&times;</span>
-        <h2 id="nasa-title">NASA News</h2>
-        <img id="nasa-image" src="" alt="NASA APOD">
-        <p id="nasa-description"></p>
+            <hr style="border: 0.5px solid #00ffff; margin: 15px 0;">
+            <button id="btn-save-log">현재 경로 저장하기</button>
+            <div id="path-list-container">
+                <p style="font-size: 12px; margin-top: 10px;">저장된 로그 (최근 3개)</p>
+                <ul id="path-list" style="list-style: none; padding: 0; font-size: 13px;">
+                </ul>
+            </div>
+        </div>
     </div>
-</div>
+
+    <div id="nasa-modal" class="hidden">
+        <div class="modal-content">
+            <span id="close-modal">&times;</span>
+            <h2 id="nasa-title">NASA News</h2>
+            <img id="nasa-image" src="" alt="NASA APOD">
+            <p id="nasa-description"></p>
+        </div>
+    </div>
 
     <div id="map"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_zt5pygWBhHI-Cqy6os7fMFSqAXfYels&libraries=geometry,drawing&callback=initMap" async defer></script>
-    
+
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_zt5pygWBhHI-Cqy6os7fMFSqAXfYels&libraries=geometry,drawing&callback=initMap"
+        async defer></script>
+
     <script src="main.js"></script>
 </body>
+
 </html>
