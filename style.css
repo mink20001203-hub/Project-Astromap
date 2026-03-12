@@ -148,7 +148,20 @@ button:hover {
     font-size: 30px; cursor: pointer; color: #00ffff;
 }
 
-#nasa-image { width: 100%; margin: 15px 0; border-radius: 5px; }
+/* style.css에 추가 */
+#nasa-modal .modal-content {
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    background: rgba(10, 25, 47, 0.95);
+    color: #e6f1ff;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+#nasa-image {
+    border-radius: 8px;
+    margin-bottom: 15px;
+    filter: brightness(1.1) contrast(1.1);
+}
 
 @keyframes warpMove {
     from { background-position: 0 0; }
