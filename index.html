@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AstroMap - Space Exploration</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:,">
 </head>
-
 <body>
     <canvas id="space-canvas"></canvas>
 
@@ -21,7 +20,7 @@
         <div class="warp-effect"></div>
         <div class="dashboard-text">
             <h2>WARP DRIVE ACTIVE</h2>
-            <p id="status-msg">지구 대기권 진입 및 데이터 동기화 중...</p>
+            <p id="status-msg">지구 대기권 진입 및 좌표 동기화 중...</p>
             <div class="progress-bar">
                 <div id="progress-fill"></div>
             </div>
@@ -31,15 +30,15 @@
     <div id="mission-ui" class="hidden">
         <div class="mission-panel">
             <h3>GROUND MISSION</h3>
-            <p>러닝 동선 거리: <span id="distance-value">0</span> km</p>
+            <p>누적 이동 거리: <span id="distance-value">0</span> km</p>
             <button id="btn-reset">경로 초기화</button>
 
             <hr style="border: 0.5px solid #00ffff; margin: 15px 0;">
             <button id="btn-save-log">현재 경로 저장하기</button>
+            <button id="btn-back-space">우주로 돌아가기</button>
             <div id="path-list-container">
                 <p style="font-size: 12px; margin-top: 10px;">저장된 로그 (최근 3개)</p>
-                <ul id="path-list" style="list-style: none; padding: 0 10px; font-size: 13px;">
-                </ul>
+                <ul id="path-list" style="list-style: none; padding: 0 10px; font-size: 13px;"></ul>
             </div>
         </div>
     </div>
@@ -56,10 +55,7 @@
     <div id="map"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_zt5pygWBhHI-Cqy6os7fMFSqAXfYels&libraries=geometry""></script>
-
     <script src="main.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_zt5pygWBhHI-Cqy6os7fMFSqAXfYels&loading=async&callback=initMap&v=weekly&libraries=geometry,marker"></script>
 </body>
-
 </html>
